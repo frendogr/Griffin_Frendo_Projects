@@ -1,0 +1,861 @@
+---
+title: "Final Project"
+author: "Group 8 (Griffin Frendo, Manar Saiyad and Zhengxun Song)"
+date: "Decmember 14th, 2020"
+output:
+  rmarkdown::github_document:
+    toc: true
+    number_sections: false
+    toc_float: true
+    toc_depth: 4
+    df_print: paged
+---
+
+# Introduction:
+
+In this project, we plan to answer the following questions. “Which collegiate conference is the best”, “The correlation between the region a team is from and success”, “The correlation between the region a team is from and the number of points they score”, “are special teams of particular value for a team’s performance”, and “does defense win games”. We used a combination of data science techniques in R to wrangle, visualize, and interpret results. The main tool we used was Tidyverse. Tidyverse gave us the power to create data frames that we used to answer the questions. It also gave us the power to create plots that visualize the results. 
+
+This dataset has 130 rows and 130 columns. It includes every FBS team that competes in college football division one along with a plethora of statistics for each team. After starting the project and going through the data, the first issue that we noticed was with the “record” column of data in the CSV file. The CSV file was reading the team's record as a date because it was formatted like  Month-Year. The record of a team was very important for the questions we were trying to answer therefore after we decided that there was no easy fix, we created 2 new columns into the CSV file for wins and losses. We deleted the record column after that. Next, to answer the desired questions we added 3 variables to the original data set.  The variables were Region, Power Five, and Conference a team plays in. Due to online learning, the best way to make sure we were using the same code was to create a markdown file that added the new variables into the existing data frame. Everyone was to run this code before answer a question so that there were no disparities in results.
+
+During the completion of this project, we plan on learning about the statistics behind college football and more about what the data means. Initially, we believe that the best conference in college football will be either the SEC, Big 10, or the ACC. This will most likely occur because, in the last 5 years, these are the only three conference to have a team win a championship.  We hypothesize that the best region in college football is either the Midwest or the South East. We believe it could be either of the regions because both regions possess some of the top teams and most competitive conferences in the United States. Next, we believe that a team from a southern climate will score more points. This is most likely because it stays warmer for longer periods and it is easier to score more in the warm. We also plan to see that both special teams and defense help teams win games. It is most likely that a more successful team will be well rounded in all three facets of football (offense, defense, and special teams).
+
+
+<br>
+<br>
+<br>
+
+# Results:
+
+
+```{r, echo=FALSE}
+
+library(tidyverse)
+
+
+
+cfb <- read.csv("C:\\Users\\griff\\Desktop\\STT 180\\RMD FILES\\CFB2019_final.csv", header = TRUE)
+
+
+```
+
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      message = FALSE, 
+                      warning = FALSE,
+                      comment = NA)
+```
+
+
+```{r , echo=FALSE}
+
+#Base Code
+
+
+NW <- c("Air Force (Mountain West)", "Boise St. (Mountain West)", "Oregon (Pac-12)"   ,"Oregon St. (Pac-12)" , "Washington (Pac-12)" , "Washington St. (Pac-12)"  , "Wyoming (Mountain West)"   )
+
+NE <- c("Boston College (ACC)", "Maryland (Big Ten)", "Massachusetts (FBS Independent)" , "Navy (AAC)", "UConn (AAC)"  )
+  
+MW <- c("Akron (MAC)", "Ball St. (MAC)", "Bowling Green (MAC)" , "Central Mich. (MAC)" , "Cincinnati (AAC)" , "Colorado (Pac-12)"  ,   "Colorado St. (Mountain West)" , "Eastern Mich. (MAC)"  , "Illinois (Big Ten)" , "Indiana (Big Ten)" , "Iowa (Big Ten)" ,  "Iowa St. (Big 12)" , "Kansas (Big 12)" ,  "Kansas St. (Big 12)" , "Kent St. (MAC)" ,  "Kentucky (SEC)"   , "Louisville (ACC)"  , "Miami (OH) (MAC)" , "Michigan (Big Ten)" ,  "Michigan St. (Big Ten)" , "Minnesota (Big Ten)" , "Missouri (SEC)"  ,  "Nebraska (Big Ten)" ,   "Northern Ill. (MAC)"       , "Northwestern (Big Ten)" ,  "Notre Dame (FBS Independent)",  "Ohio (MAC)" ,  "Ohio St. (Big Ten)" , "Purdue (Big Ten)"  ,   "Toledo (MAC)"  ,  "Western Ky. (C-USA)" , "Western Mich. (MAC)" , "Wisconsin (Big Ten)"       )
+  
+MA <- c("Army West Point (FBS Independent)", "Buffalo (MAC)", "Liberty (FBS Independent)" , "Marshall (C-USA)"  ,  "Old Dominion (C-USA)"  ,  "Penn St. (Big Ten)"  ,  "Pittsburgh (ACC)"  ,  "Rutgers (Big Ten)"  , "Syracuse (ACC)" ,  "Temple (AAC)"   ,  "Virginia (ACC)"  ,  "Virginia Tech (ACC)", "West Virginia (Big 12)"    )
+  
+PW <- c("California (Pac-12)", "Fresno St. (Mountain West)" , "Hawaii (Mountain West)" ,"Nevada (Mountain West)"  ,  "San Diego St. (Mountain West)"   , "San Jose St. (Mountain West)"  , "Southern California (Pac-12)", "Stanford (Pac-12)" , "UCLA (Pac-12)", "UNLV (Mountain West)", "Utah St. (Mountain West)"        )
+
+SW <- c("Arizona (Pac-12)", "Arizona St. (Pac-12)" , "Baylor (Big 12)", "BYU (FBS Independent)" , "Houston (AAC)" , "New Mexico (Mountain West)" ,  "New Mexico St. (FBS Independent)" , "North Texas (C-USA)"  ,  "Oklahoma (Big 12)" , "Oklahoma St. (Big 12)" , "Rice (C-USA)" ,  "SMU (AAC)" ,   "TCU (Big 12)", "Tulsa (AAC)", "Utah (Pac-12)"   ,   "UTSA (C-USA)",  "UTEP (C-USA)"        )
+
+SE <- c("Alabama (SEC)" , "Appalachian St. (Sun Belt)" ,"Arkansas (SEC)" , "Arkansas St. (Sun Belt)" , "Auburn (SEC)" , "Charlotte (C-USA)" , "Clemson (ACC)" , "Coastal Carolina (Sun Belt)" , "Duke (ACC)" , "East Carolina (AAC)" ,  "FIU (C-USA)" ,  "Fla. Atlantic (C-USA)" , "Florida (SEC)", "Florida St. (ACC)" ,"Ga. Southern (Sun Belt)" , "Georgia (SEC)"   , "Georgia St. (Sun Belt)"   , "Georgia Tech (ACC)", "La.-Monroe (Sun Belt)" , "Louisiana (Sun Belt)"    ,  "Louisiana Tech (C-USA)"  , "LSU (SEC)"  , "Memphis (AAC)" , "Miami (FL) (ACC)" ,  "Middle Tenn. (C-USA)" , "Mississippi St. (SEC)"  , "NC State (ACC)" , "North Carolina (ACC)"   ,  "Ole Miss (SEC)" , "South Alabama (Sun Belt)" ,     "South Carolina (SEC)" ,      "South Fla. (AAC)"   , "Southern Miss. (C-USA)"   , "Tennessee (SEC)" ,  "Texas (Big 12)" , "Texas A&M (SEC)"   ,    "Texas St. (Sun Belt)" , "Texas Tech (Big 12)"  ,  "Troy (Sun Belt)" , "Tulane (AAC)" ,    "UAB (C-USA)" ,   "UCF (AAC)"  , "Vanderbilt (SEC)" , "Wake Forest (ACC)")
+
+
+cfb$region <- rep(NA, length(cfb$Games))
+
+cfb$region[cfb$Team %in% NW] <- "NW"
+
+cfb$region[cfb$Team %in% NE] <- "NE"
+
+cfb$region[cfb$Team %in% MW] <- "MW" 
+  
+cfb$region[cfb$Team %in% MA] <- "MA"
+
+cfb$region[cfb$Team %in% PW] <- "PW" 
+
+cfb$region[cfb$Team %in% SW] <- "SW" 
+
+cfb$region[cfb$Team %in% SE] <- "SE" 
+
+
+
+mtwest <- c("Air Force (Mountain West)", "Boise St. (Mountain West)" , "Colorado St. (Mountain West)",  "Fresno St. (Mountain West)", "Hawaii (Mountain West)" ,  "Nevada (Mountain West)", "New Mexico (Mountain West)" ,  "San Diego St. (Mountain West)",  "San Jose St. (Mountain West)" , "UNLV (Mountain West)"  ,  "Utah St. (Mountain West)" ,    "Wyoming (Mountain West)"  )
+
+mac <- c( "Akron (MAC)"  ,"Ball St. (MAC)"  , "Bowling Green (MAC)", "Buffalo (MAC)" ,  "Central Mich. (MAC)"   ,        "Eastern Mich. (MAC)" ,   "Kent St. (MAC)"   ,  "Miami (OH) (MAC)" ,  "Northern Ill. (MAC)"    ,  "Ohio (MAC)"    ,  "Toledo (MAC)"  ,   "Western Mich. (MAC)")
+
+
+sec <- c("Alabama (SEC)","Arkansas (SEC)" , "Auburn (SEC)", "Florida (SEC)" , "Georgia (SEC)" ,  "Kentucky (SEC)", "LSU (SEC)"   , "Mississippi St. (SEC)" , "Missouri (SEC)" ,   "Ole Miss (SEC)" ,      "South Carolina (SEC)" ,   "Tennessee (SEC)"  ,      "Texas A&M (SEC)"  , "Vanderbilt (SEC)")
+
+sunbelt <- c("Appalachian St. (Sun Belt)" , "Arkansas St. (Sun Belt)" ,   "Coastal Carolina (Sun Belt) " ,  "Ga. Southern (Sun Belt)"  ,  "Georgia St. (Sun Belt)"  , "La.-Monroe (Sun Belt)" ,  "Louisiana (Sun Belt)","South Alabama (Sun Belt)" ,  "Texas St. (Sun Belt)",  "Troy (Sun Belt)", "Coastal Carolina (Sun Belt)" )
+
+
+pac12 <- c( "Arizona (Pac-12)"   ,  "Arizona St. (Pac-12)" ,   "California (Pac-12)"   ,    "Colorado (Pac-12)" ,  "Oregon (Pac-12)"  ,      "Oregon St. (Pac-12)"  , "Southern California (Pac-12)" ,  "Stanford (Pac-12)" ,  "UCLA (Pac-12)" , "Utah (Pac-12)" ,   "Washington St. (Pac-12)" ,   "Washington (Pac-12)"  )
+
+independent <- c("Army West Point (FBS Independent)"   ,"BYU (FBS Independent)"  , "Liberty (FBS Independent)"  ,    "Massachusetts (FBS Independent)" , "New Mexico St. (FBS Independent)" ,  "Notre Dame (FBS Independent)")
+
+big12 <- c("Baylor (Big 12)" , "Iowa St. (Big 12)"    , "Kansas (Big 12)"   , "Kansas St. (Big 12)"   , "Oklahoma (Big 12)"    ,     "Oklahoma St. (Big 12)"   ,  "TCU (Big 12)"      ,  "Texas (Big 12)" ,   "Texas Tech (Big 12)" ,     "West Virginia (Big 12)"  )
+
+acc <- c("Boston College (ACC)" ,  "Clemson (ACC)" , "Duke (ACC)"    ,    "Boston College (ACC)"  ,    "Florida St. (ACC)"  , "Georgia Tech (ACC)"    ,     "Louisville (ACC)" ,  "Miami (FL) (ACC)"   , "NC State (ACC)" , "North Carolina (ACC)", "Pittsburgh (ACC)"   ,  "Syracuse (ACC)"   ,   "Virginia (ACC)"   ,  "Virginia Tech (ACC)"     ,  "Wake Forest (ACC)", "Houston (AAC)")
+
+c_usa <- c( "Charlotte (C-USA)"    , "FIU (C-USA)" ,  "Fla. Atlantic (C-USA)" , "Louisiana Tech (C-USA)"    , "Marshall (C-USA)" ,       "Middle Tenn. (C-USA)"  ,  "North Texas (C-USA)"  , "Old Dominion (C-USA)"  ,   "Rice (C-USA)","Southern Miss. (C-USA)"  , "UAB (C-USA)" ,   "UTEP (C-USA)"   , "UTSA (C-USA)", "Western Ky. (C-USA)")
+
+
+aac <- c( "Cincinnati (AAC)"   , "East Carolina (AAC)"   ,  "Memphis (AAC)"  ,    "Navy (AAC)"  ,  "SMU (AAC)"    , "South Fla. (AAC)"  , "Temple (AAC)",  "Tulane (AAC)"  ,    "UCF (AAC)"     ,  "UConn (AAC)"  , "Tulsa (AAC)"  )
+
+big10 <- c( "Illinois (Big Ten)"  , "Iowa (Big Ten)"  , "Indiana (Big Ten)"  , "Maryland (Big Ten)"    ,  "Michigan (Big Ten)"  , "Michigan St. (Big Ten)" , "Minnesota (Big Ten)"  ,   "Nebraska (Big Ten)"  , "Northwestern (Big Ten)" ,   "Ohio St. (Big Ten)"   , "Penn St. (Big Ten)" , "Purdue (Big Ten)"   ,  "Rutgers (Big Ten)"  ,"Wisconsin (Big Ten)"   )
+
+
+
+cfb$conference <- rep(NA, length(cfb$Games))
+
+cfb$conference[cfb$Team %in% mtwest ] <- "mtwest"
+
+cfb$conference[cfb$Team %in% mac] <- "mac"
+
+cfb$conference[cfb$Team %in% sec] <- "sec" 
+  
+cfb$conference[cfb$Team %in% sunbelt] <- "sunbelt"
+
+cfb$conference[cfb$Team %in% pac12] <- "pac12" 
+
+cfb$conference[cfb$Team %in% independent] <- "independent" 
+
+cfb$conference[cfb$Team %in% big12] <- "big12" 
+
+cfb$conference[cfb$Team %in% acc] <- "acc" 
+
+cfb$conference[cfb$Team %in% c_usa] <- "c_usa"
+
+cfb$conference[cfb$Team %in% aac] <- "aac" 
+
+cfb$conference[cfb$Team %in% big10] <- "big10" 
+
+
+
+yes <- c("sec", "big10", "big12", "acc", "pac12", "independent") 
+
+
+no <- c("mtwest", "mac", "sunbelt", "c_usa", "aac")
+
+
+
+cfb$power5 <- rep(NA, length(cfb$Games))
+
+
+cfb$power5[cfb$conference %in% yes ] <- "yes"
+
+cfb$power5[cfb$conference %in% no ] <- "no"
+
+
+
+cfb_with_wp<- cfb %>% 
+  mutate(win_percentage = Wins/Games * 100)
+
+```
+
+<br>
+<br>
+
+
+#### **Question One (Which Collegiate conference is the best?):**
+
+<br>
+<br>
+
+**Plot Showing the top conference by win percentage**
+
+<br>
+```{r, echo=FALSE}
+cfb%>%
+  group_by(conference)%>%
+  summarize(wining.avg= mean(Wins/Games,na.rm = TRUE)*100)%>%
+  ggplot(mapping=aes(x=conference,y=wining.avg),)+geom_bar(stat = "identity",color= "blue",fill="dodgerblue4" )+labs(x="Conference", y="Winning percent*", title = "Win percent of each conference",caption="*percentages caluclated by: total Wins/ total Games")+theme(panel.grid.minor=element_line(color='light blue'),panel.grid.major=element_line(size=1.1),panel.background= element_rect(fill='light blue'),axis.text.x = element_text(angle=40,vjust=0.5))
+```
+
+**A closer look at the two top conferences based on Winning Percentage**
+```{r, echo=FALSE}
+cfb%>%
+  group_by(conference)%>%
+  summarize(wining.avg= mean(Wins/Games,na.rm = TRUE)*100)%>%
+  summarize(Conference = conference[conference=="sec"| conference=="aac" |conference=="big10"],
+            "Winning percent"=wining.avg[conference=="sec"| conference=="aac" |conference=="big10"])
+```
+<br>
+
+**Discussion for Question One:**
+
+This question was posed so that we could look at which conference was the best. In doing this we had to decide which metric we wanted to use to determine the “best”. We decided that the best metric would be the winning percentage (the number of games a team wins / the number of games that they played).  When doing this we found that 8 conferences were close in terms of win percentage. The top two conferences ended up being the AAC and the SEC. **The SEC came out on top with a winning percentage of 58.09**. The AAC was close behind with a winning percentage of 57.70. In this result, the winning percentage does not take into consideration the quality of teams that the conference plays. There is no way to filter that in this data therefore this is the best that we can do. The second best thing would only to look at power five conference teams. **The SEC would still be the best but the second-best would then be the Big 10 with a winning percentage of 55.91**. 
+
+
+
+<br>
+<br>
+
+#### ***Question Two (What is the correlation between the region a team is from and success?):***
+
+<br>
+
+**Data Frame with All Variables used for this question:**
+
+```{r, echo=FALSE}
+
+cfb %>% 
+  select(Team, conference, region, power5)
+
+
+
+cfb_with_wp<- cfb %>% 
+  mutate(win_percentage = Wins/Games * 100)
+
+```
+
+
+<br>
+
+**Plot showing every team and their conference on a scatter plot by winning percentage**
+```{r, echo=FALSE}
+ggplot(data = cfb_with_wp, mapping = aes(x = seq(1, length(Team)) , y = win_percentage)) + geom_point(aes(color = region)) + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + ylab("win percentage") + labs(caption = "Where the points are on the x axis in the plot are of no signicance")
+```
+
+<br>
+
+**Table Showing all Regions total Winning Percentage**
+```{r, echo=FALSE}
+region_wp_df <- cfb_with_wp %>%
+  group_by(region) %>% 
+  summarise(region_wp_1 = mean(win_percentage)) %>% 
+  arrange(desc(region_wp_1))
+
+region_wp_df
+
+```
+
+<br>
+
+**Bar Graph Showing all Regions total Winning Percentage**
+```{r, echo=FALSE}
+ggplot(data = region_wp_df, mapping = aes(x = region, y =region_wp_1 )) + geom_bar(color = 'black', fill = 'forestgreen' ,  stat = "identity") + xlab("Region") + ylab("Overall Win Perecnetage")
+```
+
+<br>
+
+**Number of teams in each region**
+```{r, echo=FALSE}
+cfb %>% 
+  count(region, name = "Teams in Each Region")
+```
+
+<br>
+
+**Table showing top teams winning percentage for each region**
+```{r, echo=FALSE}
+ma_top_teams_by_wp <- cfb_with_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "MA") %>% 
+  slice_max(win_percentage, n=2)
+  
+
+ma_top_teams_by_wp_mean <- ma_top_teams_by_wp %>% 
+  summarise(mean_wp_of_top_ma = mean(win_percentage))
+
+
+
+#-----------------------------------------------------------------
+
+mw_top_teams_by_wp <- cfb_with_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "MW") %>% 
+  slice_max(win_percentage, n=3)
+  
+
+mw_top_teams_by_wp_mean <- mw_top_teams_by_wp %>% 
+  summarise(mean_wp_of_top_mw = mean(win_percentage))
+
+
+#------------------------------------------------------------------
+
+ne_top_teams_by_wp <- cfb_with_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "NE") %>% 
+  slice_max(win_percentage, n=2)
+  
+
+ne_top_teams_by_wp_mean <- ne_top_teams_by_wp %>% 
+  summarise(mean_ne_of_top_ne = mean(win_percentage))
+
+
+#------------------------------------------------------------------
+
+
+nw_top_teams_by_wp <- cfb_with_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "NW") %>% 
+  slice_max(win_percentage, n=3)
+  
+
+nw_top_teams_by_wp_mean <- nw_top_teams_by_wp %>% 
+  summarise(mean_wp_of_top_nw = mean(win_percentage))
+
+
+#------------------------------------------------------------------
+
+pw_top_teams_by_wp <- cfb_with_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "PW") %>% 
+  slice_max(win_percentage, n=2)
+  
+
+pw_top_teams_by_wp_mean <- pw_top_teams_by_wp %>% 
+  summarise(mean_pw_of_top_pw = mean(win_percentage))
+
+
+#------------------------------------------------------------------
+
+
+se_top_teams_by_wp <- cfb_with_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "SE") %>% 
+  slice_max(win_percentage, n=2)
+  
+
+se_top_teams_by_wp_mean <- se_top_teams_by_wp %>% 
+  summarise(mean_wp_of_top_se= mean(win_percentage))
+
+
+
+#------------------------------------------------------------------
+
+sw_top_teams_by_wp <- cfb_with_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "SW") %>% 
+  slice_max(win_percentage, n=3)
+  
+
+sw_top_teams_by_wp_mean <- sw_top_teams_by_wp %>% 
+  summarise(mean_wp_of_top_sw = mean(win_percentage))
+
+
+
+```
+
+```{r, echo=FALSE}
+combo_mean_top_teams_regions_cols = bind_cols(sw_top_teams_by_wp_mean, se_top_teams_by_wp_mean, pw_top_teams_by_wp_mean,nw_top_teams_by_wp_mean,mw_top_teams_by_wp_mean, ne_top_teams_by_wp_mean, ma_top_teams_by_wp_mean)
+
+combo_mean_top_teams_regions<- combo_mean_top_teams_regions_cols %>% 
+  gather(combo_mean_top_teams_regions_cols) %>% 
+  rename(mean_region_top_teams_wp = value) %>% 
+  arrange(desc(mean_region_top_teams_wp))
+
+
+
+combo_mean_top_teams_regions
+
+```
+
+<br>
+
+**Bar graph showing top teams winning percentage for each region**
+```{r, echo=FALSE}
+ggplot(data = combo_mean_top_teams_regions, mapping = aes(x = combo_mean_top_teams_regions_cols, y =mean_region_top_teams_wp )) + geom_bar(color = 'black', fill = 'royalblue3' ,  stat = "identity") + xlab("Region") + ylab("Win Perecnetages for top teams") + scale_x_discrete(labels=c("mean_wp_of_top_se" = "SE", "mean_wp_of_top_mw" = "MW", "mean_wp_of_top_nw" = "NW", "mean_wp_of_top_sw" = "SW", "mean_wp_of_top_ma" = "MA", "mean_pw_of_top_pw" = "PW" , "mean_ne_of_top_ne" = "NE"))
+```
+<br>
+
+**Table showing only power five top teams winning percentage for each region**
+
+```{r, echo=FALSE}
+p5_teams_wp <- cfb_with_wp %>% 
+  filter(power5 == "yes") %>% 
+  select(Team, win_percentage, region)
+
+
+ 
+
+#----------------------------------------------
+
+ma_top_teams_by_wp_p5 <- p5_teams_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "MA") %>% 
+  slice_max(win_percentage, n=2)
+  
+
+ma_top_teams_by_wp_p5_mean <- ma_top_teams_by_wp_p5 %>% 
+  summarise(mean_wp_ma = mean(win_percentage))
+
+
+
+#----------------------------------------------
+
+mw_top_teams_by_wp_p5 <- p5_teams_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "MW") %>% 
+  slice_max(win_percentage, n=2)
+  
+
+mw_top_teams_by_wp_p5_mean <- mw_top_teams_by_wp_p5 %>% 
+  summarise(mean_wp_mw = mean(win_percentage))
+
+
+#----------------------------------------------
+
+ne_top_teams_by_wp_p5 <- p5_teams_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "NE") %>% 
+  slice_max(win_percentage, n=2)
+  
+
+ne_top_teams_by_wp_p5_mean <- ne_top_teams_by_wp_p5 %>% 
+  summarise(mean_wp_ne = mean(win_percentage))
+
+
+
+
+#----------------------------------------------
+
+nw_top_teams_by_wp_p5 <- p5_teams_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "NW") %>% 
+  slice_max(win_percentage, n=2)
+  
+
+nw_top_teams_by_wp_p5_mean <- nw_top_teams_by_wp_p5 %>% 
+  summarise(mean_wp_nw = mean(win_percentage))
+
+
+
+#----------------------------------------------
+
+pw_top_teams_by_wp_p5 <- p5_teams_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "PW") %>% 
+  slice_max(win_percentage, n=4)
+  
+
+pw_top_teams_by_wp_p5_mean <- pw_top_teams_by_wp_p5 %>% 
+  summarise(mean_wp_pw = mean(win_percentage))
+
+
+#----------------------------------------------------------
+
+
+se_top_teams_by_wp_p5 <- p5_teams_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "SE") %>% 
+  slice_max(win_percentage, n=2)
+  
+
+
+
+se_top_teams_by_wp_p5_mean <- se_top_teams_by_wp_p5 %>% 
+  summarise(mean_wp_se = mean(win_percentage))
+
+
+
+#----------------------------------------------
+
+
+sw_top_teams_by_wp_p5 <- p5_teams_wp %>%
+  select(Team, win_percentage, region) %>% 
+  filter(region == "SW") %>% 
+  slice_max(win_percentage, n=2)
+  
+
+sw_top_teams_by_wp_p5_mean <- sw_top_teams_by_wp_p5 %>% 
+  summarise(mean_wp_sw = mean(win_percentage))
+
+
+```
+
+
+```{r, echo=FALSE}
+combo_p5_mean_cols = bind_cols(sw_top_teams_by_wp_p5_mean, se_top_teams_by_wp_p5_mean, pw_top_teams_by_wp_p5_mean,nw_top_teams_by_wp_p5_mean,mw_top_teams_by_wp_p5_mean, ne_top_teams_by_wp_p5_mean, ma_top_teams_by_wp_p5_mean)
+
+combo_p5_mean<- combo_p5_mean_cols %>% 
+  gather(combo_p5_mean_cols) %>% 
+  rename(mean_region_p5 = value) %>% 
+  arrange(desc(mean_region_p5))
+
+combo_p5_mean
+```
+
+<br>
+
+**Bar Graph showing only power five top teams winning percentage for each region**
+
+```{r, echo=FALSE}
+ggplot(data = combo_p5_mean, mapping = aes(x = combo_p5_mean_cols, y =mean_region_p5 )) + geom_bar(color = 'black', fill = 'slateblue2' ,  stat = "identity") + xlab("Region") + ylab("Win Perecnetages for top P5 teams") + scale_x_discrete(labels=c("mean_wp_se" = "SE", "mean_wp_mw" = "MW", "mean_wp_nw" = "NW", "mean_wp_sw" = "SW", "mean_wp_ma" = "MA", "mean_wp_pw" = "PW" , "mean_wp_ne" = "NE"))
+```
+
+<br>
+
+
+**Discussion for Question Two:** 
+
+To quantify “success” we decided to look at win percentage (phrased as WP). In this case, it is the number of games a team plays divided by the number of games they won. The plot at the top is a scatter of every team’s WP (y-axis) sorted by color to represent the team’s region. The first thing we decided to do was get a baseline for results. We did this by finding the mean of each team’s WP grouped by region. **This result (shown in the green bar graph) proved that when only looking at the region with all the teams, the most successful region was the North West.** But, when looking at the number of teams in each region, the North West only has 7 teams, this is a big reason why it is so high. We decided that in sports,  a team’s region should be based on the best teams only, not its worst. Therefore we filtered all the teams out in each region that had a win percentage under 85%. The results are shown in the blue bar graph. **In this case, the most successful region was the South East**. In football, a team is truly only taken seriously when it is in a Power 5 conference (phrased as P5).  Some deem that success is championships. This dataset is not made for championships although, almost all teams that win a national championship are from P5 conferences (plus independents). **Therefore when we take the teams that have a winning percentage from only P5 conferences, SE is still the most successful region with the Midwest close behind**. Looking back. The Northeast went from the top in win percentage to just average.
+
+
+
+<br>
+<br>
+
+#### ***Question Three (What is the the correlation between the region a team is from and the number of points they score?):***
+
+<br>
+
+
+**Data Frame for variables needed in this question**
+```{r, echo=FALSE}
+cfb_q3 <- cfb_with_wp %>% 
+  select(Team, Total.Points, region)
+
+cfb_q3
+```
+<br>
+
+**Total Point Scored for Each Region**
+```{r, echo=FALSE}
+
+cfb_final_q3 <- cfb_q3 %>% 
+  group_by(region) %>% 
+  summarise(sum_points_by_region = sum(Total.Points))
+
+cfb_final_q3
+```
+
+
+<br>
+
+**Bar graph showing total points scored for each region**
+
+```{r, echo=FALSE}
+cfb_final_q3 %>% 
+  ggplot(aes(x = region, y = sum_points_by_region ))  + geom_bar(color = 'black', fill = 'palevioletred1' ,  stat = "identity") + xlab("Region") + ylab("sum of total points by region")
+```
+<br>
+
+**Number of teams for each region**
+```{r, echo=FALSE}
+number_of_teams <- cfb %>% 
+  count(region, name = "Teams in Each Region")
+
+number_of_teams
+```
+
+<br>
+
+**Sum of points by regions adjusted for number of teams in each region**
+```{r, echo=FALSE}
+merged_df <- merge(cfb_final_q3, number_of_teams)
+
+
+
+points_by_number_of_teams <- merged_df %>%
+  group_by(region) %>% 
+  summarise(sum_points_by_region_by_number_of_teams = sum_points_by_region / `Teams in Each Region`)
+
+points_by_number_of_teams
+
+```
+
+<br>
+
+
+**Bar graph showing total points scored for each region divided by number of teams**
+
+```{r, echo=FALSE}
+points_by_number_of_teams %>% 
+  ggplot(aes(x = region, y = sum_points_by_region_by_number_of_teams)) + geom_bar(color = 'black', fill = 'lightseagreen' ,  stat = "identity") + xlab("Region") + ylab("sum of total points by region divided by number of teams")
+```
+<br>
+
+**Discussion for Question Three:** 
+
+In this question,  we wanted to find out if there was a correlation between where a team is from and the number of points they score. At first, we wanted to see the total number of points scored for each region. **In this result, we concluded that the southeast scored the most amount of points by far with 17183 points scored.** This was not surprised because the southeast contains the most amount of teams with 44. Since there is such a high disparity we wanted to divide the number of each team by the total points to get the true amount of points scored by each region. In this result, the top points scored were by the northwest with 433 points scored. The distribution between the regions when evaluated with the number of teams in each region shows that it is pretty even. **Therefore the result is that there is no correlation between the number of points scored and the region a team is from**. 
+
+
+<br>
+<br>
+
+
+#### ***Question Four (Are special teams of particular value for a team’s performance?):***
+
+<br>
+
+**Tibble for all variables needed for this question**
+```{r,echo=FALSE}
+cfb %>% 
+  select(Team, Kickoff.Return.Yards, Opponent.Kickoff.Return.Yards,Net.Punt.Return.Yards, Opp.Net.Punt.Return.Yards, Feild.Goals, Wins)
+```
+
+<br>
+
+
+##### ***Looking at Net Return Yards  (Kickoff Return Yards - Opponent.Kickoff.Return.Yards) vs wins***
+
+<br>
+
+**Plot Showing Net Return Yards vs wins**
+
+<br>
+
+```{r, echo=FALSE}
+cfb %>% 
+  select(Team, Kickoff.Return.Yards, Opponent.Kickoff.Return.Yards, Wins)%>%
+  summarise(Net_return=Kickoff.Return.Yards - Opponent.Kickoff.Return.Yards, Wins= Wins )%>%
+  ggplot(aes(Wins, Net_return))+geom_point()+stat_smooth(method = "lm", se = FALSE)+labs(x="Wins", y="Net Kickoff Return Yards", title = "Win vs. Net Kickoff Return Yards")
+```
+
+##### ***Looking at Net punt Yards  (net punt Return Yards - net Opponent punt Return Yards) vs wins***
+
+<br>
+
+**Plot Showing Net punt Yards vs wins**
+
+
+```{r, echo=FALSE}
+cfb %>% 
+  select(Team, Net.Punt.Return.Yards, Opp.Net.Punt.Return.Yards, Wins)%>% 
+  summarise(Net.punt.return=Net.Punt.Return.Yards-Opp.Net.Punt.Return.Yards, Wins= Wins )%>%
+  ggplot(aes(Wins,Net.punt.return))+geom_point()+stat_smooth(method = "lm", se = FALSE)+labs(x="Wins", y="Net Punt Return Yards", title = "Win vs. Net Punt Return Yards")
+```
+
+##### ***Looking at total field goals vs wins***
+
+<br>
+
+**Plot Showing total field goals vs wins**
+
+
+```{r, echo=FALSE}
+cfb %>% 
+  select(Team, Feild.Goals,Wins)%>%
+  ggplot(aes(Wins,Feild.Goals))+geom_point()+stat_smooth(method = "lm", se = FALSE)+labs(x="Wins", y="Feild Goals", title = "Win vs. Feild goals")
+```
+<br>
+
+**Discussion for Question Four:** 
+
+In this question, we wanted to see if special teams were of particular value for a team’s performance. To do this we wanted to look at three variables, these included net kickoff return yard, net punt return yards, and the number of field goals scored. When looking at net kickoff return yards, it turned out the more wins a team had the lower the return yards for them and more of the opposing team. This was a bit of a surprise initially as we thought the graph would be flipped. The result shows us that a team doesn’t need kickoff return yards to be successful. In addition, we believe this most likely happened because this dataset did not include touchbacks (a very common occurrence where the team starts on the 25-yard line after a kickoff) in the total return yards because this is not considered a “return”.The next two plots were in line with our initial hypothesis. Both net punt yards and field goals showed a positive correlation meaning as they increased (which is a good thing) while the number of wins for teams increased as well. **Overall, we can conclude that special teams are of particular value for a team’s performance.**
+
+
+<br>
+<br>
+
+
+#### **Question Five (Does Defense Win Games?):**
+
+
+```{r, echo=FALSE}
+cfb_with_wp<- cfb %>% 
+  mutate(win_percentage = Wins/Games * 100)
+
+```
+
+<br>
+
+**Data Frame with All Variables used for this question:**
+```{r, echo=FALSE}
+cfb_defense_variables <- cfb_with_wp %>% 
+  select(Team, Avg.Points.per.Game.Allowed,  Yards.Play.Allowed, Turnover.Rank, win_percentage)
+
+
+top_teams <- cfb_defense_variables %>% 
+  filter(win_percentage >= 85) %>% 
+  select(Team, win_percentage, Avg.Points.per.Game.Allowed, Yards.Play.Allowed, Turnover.Rank)
+
+lower_teams <- cfb_defense_variables %>% 
+  filter(win_percentage <= 50) %>% 
+  select(Team, win_percentage, Avg.Points.per.Game.Allowed, Yards.Play.Allowed, Turnover.Rank)
+
+
+cfb_defense_variables
+
+```
+
+<br>
+
+**Top Teams - Winning Percentage > 85 (shown below)**
+
+```{r, echo=FALSE}
+top_teams
+```
+
+<br>
+
+**Lower Teams  - winning Percentage <= 50 (shown below) **
+
+```{r, echo=FALSE}
+lower_teams
+```
+
+<br>
+
+
+##### ***Looking at the Average Points per game allowed versus Win percentage***
+
+<br>
+
+**Histogram Showing the distribution of average points scored in a college football game**
+```{r, echo=FALSE}
+cfb %>% 
+  ggplot(aes(x = Avg.Points.per.Game.Allowed)) + geom_histogram(color = 'black', fill = 'darkgreen', binwidth = 3)
+```
+
+<br>
+
+**Total Mean of Points Scored in a College football game**
+```{r, echo=FALSE}
+cfb %>% 
+  summarise(mean_points_all = mean(Avg.Points.per.Game.Allowed))
+```
+
+<br>
+
+**Top Teams Mean Points**
+```{r, echo=FALSE}
+top_teams_ppg <- top_teams%>% 
+  select(Team, Avg.Points.per.Game.Allowed, win_percentage)
+
+
+top_teams_ppg %>% 
+  summarise(mean_points_top = mean(Avg.Points.per.Game.Allowed))
+```
+<br>
+
+**Lower Teams Mean Points**
+
+```{r, echo=FALSE}
+lower_teams_ppg <- lower_teams %>% 
+  select(Team, win_percentage, Avg.Points.per.Game.Allowed)
+
+
+lower_teams_ppg %>%
+  summarise(mean_points_lower = mean(Avg.Points.per.Game.Allowed))
+```
+<br>
+
+##### ***Looking at the yards per play allowed versus Win percentage***
+
+<br>
+
+
+**Histogram Showing the distribution of yards per play allowed in a college football game**
+```{r, echo=FALSE}
+cfb %>% 
+  ggplot(aes(x = Yards.Play.Allowed)) + geom_histogram(color = 'black', fill = 'purple', binwidth = .3)
+```
+
+<br>
+
+**Total Mean of yards per play allowed in a College football game**
+
+```{r, echo=FALSE}
+cfb %>% 
+  summarise(mean_yards_all = mean(Yards.Play.Allowed))
+```
+
+<br>
+
+
+**Top teams mean yards per play allowed**
+
+
+```{r, echo=FALSE}
+top_teams_ypa <- top_teams%>% 
+  select(Team, Yards.Play.Allowed, win_percentage)
+
+top_teams_ypa %>% 
+  summarise(mean_yards_top = mean(Yards.Play.Allowed))
+```
+
+<br>
+
+
+**Lower teams mean yards per play allowed**
+```{r, echo=FALSE}
+
+lower_teams_ypa <- lower_teams%>% 
+  select(Team, Yards.Play.Allowed, win_percentage)
+
+lower_teams_ypa %>% 
+  summarise(mean_yards_lower = mean(Yards.Play.Allowed))
+
+```
+
+<br>
+
+##### ***Looking at the median turnover rank versus Win percentage***
+
+<br>
+
+**Top Teams Median Turnover Rank**
+```{r, echo=FALSE}
+top_teams_tr <- top_teams%>% 
+  select(Team, Turnover.Rank, win_percentage)
+
+
+top_teams_tr %>% 
+  summarise(median_tr_top = median(Turnover.Rank))
+
+
+```
+
+<br>
+
+**Lower Teams Median Turnover Rank**
+
+```{r, echo=FALSE}
+lower_teams_tr <- lower_teams%>% 
+  select(Team, Turnover.Rank, win_percentage)
+
+
+lower_teams_tr %>% 
+  summarise(median_tr_lower = median(Turnover.Rank))
+```
+
+<br>
+
+**Discussion for Question Five:** 
+
+Once again, we will be looking at win percentage (WP) as a measure of winning. We decided that the three variables to look at would be Average Points per game allowed (PPG), Yards per play allowed (YPP) and Turnover rank (TR). These are the best variables because it gives us a rounded look at a teams defense. To get an understanding of normal PPG, we took the mean of all PPG which was 27.1. We also created a histogram (shown to the right) to get a range of values.  We decided the best way to look if a teams WP correlated with how good their defense played, was to filter the top teams (WP >85) and the lower teams (WP <= 50). Note: Median was used for TR because the rank given was already based off of means and statistics. In our eyes it did not makes sense to mean a rank like this. You get the same result but we believe median to be more specific. 
+
+PPG results:  Top Teams = 19.31 (mean),  Lower Teams = 31.30   (mean)
+
+YPP results:  Top Teams = 4.8 (mean),  Lower Teams = 6.0 (mean)
+
+TR Results:  Top Teams = 17 (median),  Lower Teams = 84.5 (median)
+
+
+**Based on the results above, we can conclude that defense does win games.** 
+
+
+
+
+<br>
+<br>
+<br>
+
+
+
+# Conclusion:
+
+
+Overall, we found out a lot of things about college football. We were able to conclude that, the SEC was the best conference in college football. This goes along with our hypothesis. We then found out that the best region in college football is the South East. This is consistent because the SEC (southern Eastern conference) competes in the South East. It makes sense that the best conference would also correspond with the best region. A surprising result was that the region that a team plays in does not impact the amount of points that they score. This can most likely be attributed to the fact that the number of points that a team scores are more related to the teams that they play, not the weather that they play in. In addition, we were correct in hypothesizing that a team would perform better if it’s special teams were good. Overall, teams will win more games if they have a good special  teams unit. Finally, we were correct that if a team has a better defense they will have a better win percentage. A team has to be good in all three facets of football to have a good win percentage. 
+  
+
+We believe that we could change some of our methods. Instead of using win percentage to look at success, we could look at a different parameter such as offense and defensive rank.  Or instead of using win percentage, we could have used total games played, not taking into account that different teams may have played a different amount of games because some people think more wins equals more success, no matter how many games were lost in the process. Win percentage for this project is only simple division. Although it seems quite accurate we could use more complex methods in the future such as linear regression. We also believe we could have changed the regions that we used. To get a more specific look we can break the regions into small groups. If we wanted a broader view, we could make the regions large and break them up into larger groups. Another proposed change is one to the question about how valuable special teams are. The correlation we found from this data was clear and completely reliable. To improve this calculation, we could add a way to find an exact factor on much these special teams aid the teams winning ratio. However, we would reach some limitations in terms of knowledge and data availability. Finally, we think that the answer to “The correlation between the region a team is from and success” might be a bit too specific. Since we used 3 parameters in the final (region, P5, and Top Teams) we possibly could only use two of those for the final result.
+
+This dataset limits us in a way because some statistics that we would have liked to look at were not in the dataset. These limitations include not having a variable for bowl wins and not having as a variable for field goals attempted. If we had data for bowl wins we could have deemed “success” as a bowl win. If we had “total field goal attempts” data we could have calculated field goal percentage made. This would have a great metric to look at when deciding if special teams were of particular value to a team. 
+
+Overall, we had a great time with this project. This project gave us an opportunity to explore more of R studio and the packages of R.  It gave us a deeper understanding of handling large sets of data and how to use R to get the answers that we were looking for.
+
+# Refrences:
+
+Gallini, J. (2020, January 15). College Football Team Stats 2019-2020. Retrieved December 14, 2020, from https://www.kaggle.com/jeffgallini/college-football-team-stats-2019
+
+
