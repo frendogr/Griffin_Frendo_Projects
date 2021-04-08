@@ -2,6 +2,12 @@
 title: "Final Project"
 author: "Group 8 (Griffin Frendo, Manar Saiyad and Zhengxun Song)"
 date: "Decmember 14th, 2020"
+output: 
+  html_document:
+    toc: true
+    number_sections: false
+    toc_depth: 4
+    df_print: paged
 ---
 
 # Introduction:
